@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🖥️ Local Scala",
+      "type": "scala",
+      "request": "launch",
+      "mainClass": "Main",
+      "args": [],
+      "jvmOptions": []
+    },
+    {
+      "name": "🧪 Test Local Scala",
+      "type": "scala",
+      "request": "launch",
+      "testClass": "Test"
+    },
+  ],
+}
