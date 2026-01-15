@@ -1,0 +1,15 @@
+[package]
+name = "rust_hopfield"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"] # Генерировать .so/.dylib/.dll
+path = "src/lib.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+
+[dependencies]
