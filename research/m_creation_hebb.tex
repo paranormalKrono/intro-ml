@@ -1,0 +1,102 @@
+
+\subsection{\texorpdfstring{\textbf{
+      Реализация классической модели Хопфилда}}
+  {Реализация классической модели Хопфилда}}
+
+В связи с тем, что требуется быстро просматривать результаты
+отдельно взятых операций, было решено использовать Jupyter Notebook.
+При этом нужна была хорошая статическая типизация и скорость работы.
+Scala 3 неплохо подходит под данные цели. Причём, у этого
+языка программирования есть возможность использования библиотек
+на Java, что, несомненно, является очень весомым преимуществом.
+
+Был использован Almond Kernel \cite{almond_opt}
+для запуска кода на Scala 3 в Jupyter Notebook. Также был создан докер
+файл для независимого запуска кода с использованием
+eclipse-temurin:21-jre-jammy. Была использована пара библиотек: Apache
+Commons Math 3 \cite{apache_commons_math}
+для работы с математикой и JFreeChart \cite{jfreechart}
+для вывода графиков.
+
+Весь код с записями можно найти по ссылке:
+
+\url{https://github.com/paranormalKrono/intro-ml/blob/main/notebooks/Hopfield_Network.ipynb}
+
+Далее, нужно закодировать картинки, преобразовывать изображения
+в разные вектора с данными. Для Хэбба в вектор с бинарными данными,
+так как стандартное правило Хебба поддерживает только бинарные вектора.
+
+Были созданы разные кодировщики:
+\begin{itemize}
+  \item EncoderColorBits - переводит цвет в 24 элемента \(\{-1.0,1.0\}\)
+  \item EncoderColorMono - переводит цвет в 1 элемент \(\{-1.0,1.0\}\)
+\end{itemize}
+
+Если будет 24 бита на цвет пикселя, то мы не теряем
+никакой информации, но тогда получим вектор из 24 * 8 * 8
+элементов = 1536. Стоит учитывать и тот факт, что сохраняющая способность
+классической сети Хопфилда равна \(0,14N\). Получаем сохраняющую способность
+равную 215,04 паттернов, но только в некореллированном случае. Иначе,
+произойдёт значительное снижение ёмкости.
+
+Получим закодированные изображения (Рис. \ref{media:images_patterns})
+и изображения с ошибкой (Рис. \ref{media:images_patterns_error}).
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{image_patterns.png}
+  \caption{}
+  \label{media:images_patterns}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{image_patterns_error.png}
+  \caption{}
+  \label{media:images_patterns_error}
+\end{figure}
+
+Далее создана модель классической сети Хопфилда с дискретной
+асинхронной и синхронной динамиками с правилом обучения по Хэббу.
+
+Была проверена стационарность синхронной и асинхронной динамик -
+паттерны, на которых была обучена модель не должны меняться.
+Случай изначального расположения энергии в минимуме.
+
+Для данных картинок с ошибками на входе асинхронная динамика уже через
+2 * 24 * 8 * 8 (5 * 1536) шагов даёт изначальную картинку (Рис.
+\ref{media:image_patterns_async}). Потребовалось больше шагов, так
+как асинхронный шаг обновляет только один нейрон за шаг и для
+корректного сравнения с синхронным методом были добавлены шаги.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.4\textwidth]{image_patterns_async.png}
+  \caption{}
+  \label{media:image_patterns_async}
+\end{figure}
+
+Аналогично, синхронный метод даёт тот же результат за 1 шаг.
+
+Далее было предложено проверить на цифрах
+(Рис. \ref{media:image_patterns_numbers}) - монохромная кодировка.
+И с монохромной ошибкой (Рис. \ref{media:image_patterns_numbers_error}).
+Увы, результаты оказались значительно хуже. Возможно, из-за уменьшения
+количества нейронов в 24 раза.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.4\textwidth]{image_patterns_numbers.png}
+  \caption{}
+  \label{media:image_patterns_numbers}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.4\textwidth]{image_patterns_numbers_error.png}
+  \caption{}
+  \label{media:image_patterns_numbers_error}
+\end{figure}
+
+Также была попытка использовать другие кодировки,
+но результаты были аналогичные.

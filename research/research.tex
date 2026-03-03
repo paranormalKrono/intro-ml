@@ -1,0 +1,46 @@
+\documentclass[specialist,
+               substylefile = spbu_report.rtx,
+               subf,href, 14pt]{disser}
+
+\usepackage[a4paper,
+            mag=1000, includefoot,
+            left=2cm, right=2cm, top=2cm, bottom=2cm, headsep=1cm, footskip=1cm]{geometry}
+
+\input{preamble.tex}
+
+\let\vec=\mathbf
+\setcounter{tocdepth}{2}
+
+\graphicspath{
+  {media/}
+  {fig/}
+  }
+
+
+\renewcommand{\baselinestretch}{1.1}
+\setlength{\parskip}{8pt}
+
+ 
+\begin{document}
+\input{title.tex}
+\input{review.tex}
+\newpage
+\input{content.tex}
+\newpage
+\input{introduction.tex}
+\newpage
+\section{Основная часть}
+\input{m_hopfield_structure.tex}
+\input{m_hopfield_dynamics.tex}
+\input{m_velocity_gradient.tex}
+\input{m_learning.tex}
+\input{m_creation_hebb.tex}
+\input{m_creation_velg.tex}
+\input{m_apply_lmapf.tex}
+\input{m_creation_lmapf.tex}
+\newpage
+\input{end.tex}
+\newpage
+\printbibliography
+\end{document}
+

@@ -1,0 +1,88 @@
+
+\subsection{\texorpdfstring{\textbf{
+      Реализация скоростного градиента}}
+  {Реализация скоростного градиента}}
+
+Спустя множество рассуждений было решено использовать мультиагентный подход,
+когда множество агентов - целевых состояний изменяются по одной и той же динамике
+непрерывной сети Хопфилда, а настройка происходит с использованием того факта,
+что они должны быть стационарными точками.
+
+Так появляется следующая математическая модель:
+
+\[
+  \frac{dx_{i}^\mu}{dt}= \sum\limits_{i=1}^N W_{ij}y_{j}^\mu
+  - \beta x_{i}^\mu + b_{i}
+\]
+
+\[
+  y_{j}^\mu = \tanh{(x_{j}^\mu)},
+  \quad i,j=1,\dots, N, \quad \mu=1,\dots, P
+\]
+
+Здесь \(P\) - число целевых паттернов, а \(N\) - число нейронов
+
+
+Берётся интегральный функционал
+\[
+  Q(t) = \int R(y(s),W(s),b(s),s) \, ds
+\]
+
+\[
+  R(y(t),W(t),b(t),t) = \frac{1}{2P}\sum\limits_{\mu=1}^P
+  {\lVert r^\mu(t) \rVert^2}
+\]
+
+\[
+  r^\mu(t)=-x_{*}^\mu+W(t)y^\mu(t)+b(t)
+\]
+
+\[
+  x_{*_{i}}^\mu = atanh{((1-\epsilon)\xi_{i}^\mu)}
+\]
+
+Тогда
+
+\[
+  \frac{dW}{dt}= -\gamma_{W}\P_{S}(\nabla_{S}{R(\tilde{y},W,b,t)}),
+  \quad W(0)\in S
+\]
+
+\[
+  \frac{db}{dt}= -\gamma_{b}\nabla_{b}R(\tilde{y},W,b,t)
+\]
+
+\[
+  \tilde{y}_{i}^\mu(t) = y_{i}^\mu(t) + d_{i}^\mu \\
+  \quad d_{i}^\mu = A_{i}^\mu(e^{-\alpha t} + delta)\sin{\omega_{i}^\mu t}
+\]
+
+На изображениях можно видеть явное улучшение по сравнению с Хеббом.
+Стационарные паттерны остаются после 1000 шагов (Рис.
+\ref{media:image_velgrad_stationary}).
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{image_velgrad_stationary.png}
+  \caption{}
+  \label{media:image_velgrad_stationary}
+\end{figure}
+
+Уже после первого шага убирается практически весь шум (Рис.
+\ref{media:image_velgrad}).
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.4\textwidth]{image_velgrad.png}
+  \caption{}
+  \label{media:image_velgrad}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{image_velgrad_2.png}
+  \caption{}
+  \label{media:image_velgrad_2}
+\end{figure}
+
+После 5 шагов изображения полностью восстановлены (Рис.
+\ref{media:image_velgrad_2}).
