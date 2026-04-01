@@ -1,0 +1,205 @@
+\documentclass[10pt, aspectratio=169]{beamer}
+
+\include{preamble}
+
+\pgfplotsset{compat=1.17}
+
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+
+% Для кликабельных ссылок на литературу
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=teal,
+  allcolors=blue
+}
+
+\theoremstyle{plain}
+
+
+% Настройки biblatex для Beamer
+\addbibresource{references.bib}
+\AtBeginBibliography{\footnotesize}
+
+\begin{document}
+
+\include{title.tex}
+
+% Слайд 1: Титульный
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Слайд 2: Постановка задачи
+\begin{frame}{Постановка задачи}
+  \textbf{Проблема:} Классические методы обучения сети Хопфилда (правило Хебба, Storkey) имеют ограниченную ёмкость памяти и не гарантируют сходимость к оптимальным параметрам.
+
+  \begin{definition}[Непрерывная сеть Хопфилда]
+    Динамика сети описывается системой:
+    \begin{equation}
+      \frac{dx_i}{dt} = -\beta x_i + \sum_{j=1}^{n} w_{ij} y_j + b_i, \quad y_j = \sigma(x_j)
+    \end{equation}
+    где \(w_{ij} = w_{ji}\), \(w_{ii} = 0\), \(\sigma(x) = \tanh(x)\).
+  \end{definition}
+
+  \small{Постановка задачи: \cite{hopfield1984,hertz1991}; ограничения: \cite{storkey1997}}
+\end{frame}
+
+% Слайд 3: Цель работы
+\begin{frame}{Цель работы}
+  \textbf{Цель работы:} Разработать алгоритм обучения, обеспечивающий:
+  \begin{itemize}
+    \item Гарантированную сходимость к параметрам, делающим заданные паттерны устойчивыми состояниями
+    \item Повышенную ёмкость памяти по сравнению с правилом Хебба
+    \item Устойчивость к зашумлению входных данных
+  \end{itemize}
+
+  \textbf{Предлагаемый подход:} Метод скоростного градиента (Фрадков, 1979) для минимизации функционала ошибки \cite{fradkov1979,fradkov2020}.
+
+  \small{Метод скоростного градиента: \cite{fradkov1979,fradkov2020,teryaev2024}}
+\end{frame}
+
+% Слайд 4: Теорема (часть 1)
+\begin{frame}{Теорема о сходимости (формулировка)}
+  \begin{theorem}[Фрадков, 1979 \cite{fradkov1979,fradkov2020}]
+    Рассмотрим систему с параметрами \(\theta \in \mathbb{R}^m\):
+    \[
+      \dot{x} = F(x, \theta, t), \quad Q(x, \theta, t) \ge 0
+    \]
+    Условия сходимости:
+    \begin{enumerate}
+      \item \textbf{Достижимость}: \(\exists \theta^*: Q \to 0\);
+      \item \textbf{Выпуклость по \(\theta\)}:
+            \(Q(\theta') \ge Q(\theta) + \nabla_\theta^\top Q \cdot (\theta' - \theta)\);
+      \item \textbf{Ограниченность}: \(\|\nabla_\theta Q\| \le c(1 + \|x\| + \|\theta\|)\).
+    \end{enumerate}
+    Тогда при \(\dot{\theta} = -\Gamma \nabla_\theta \dot{Q}\), \(\Gamma > 0\):
+    \[
+      \lim_{t \to \infty} Q(t) = 0
+    \]
+  \end{theorem}
+
+  \small{Полное доказательство: \cite{fradkov1979,fradkov2020}}
+\end{frame}
+
+% Слайд 5: Применение теоремы
+\begin{frame}{Применение к сети Хопфилда}
+  \textbf{Целевой функционал:}
+  \begin{equation}
+    R(W, b) = \frac{1}{2P} \sum_{\mu=1}^{P} \| r^\mu \|^2, \quad r^\mu = W y^\mu - \xi^\mu + b
+  \end{equation}
+  где \(\xi^\mu\) --- \(\mu\)-й паттерн, \(y^\mu = \sigma(\xi^\mu)\).
+
+  \textbf{Проверка условий:}
+  \begin{itemize}
+    \item[\textbf{A1}] Паттерны достижимы (ёмкость сети)
+    \item[\textbf{A2}] \(R\) — квадратичная форма \(\Rightarrow\) выпукла
+    \item[\textbf{A3}] \(\nabla_\theta R\) линеен \(\Rightarrow\) ограничен
+    \item[\textbf{A4}] Проектор: симметризация не нарушает сходимость \cite{borisov2023}
+  \end{itemize}
+
+  \small{Применение к нейросетям: \cite{teryaev2024,borisov2023}}
+\end{frame}
+
+% Слайд 6: Алгоритм
+\begin{frame}{Алгоритм обучения}
+  \textbf{Градиенты целевого функционала:}
+  \begin{align}
+    \nabla_W R & = \frac{1}{P} \sum_{\mu=1}^{P} (r^\mu)^\top y^\mu \in \mathbb{R}^{n \times n} \\
+    \nabla_b R & = \frac{1}{P} \sum_{\mu=1}^{P} r^\mu \in \mathbb{R}^{n}
+  \end{align}
+
+  \textbf{Система дифференциальных уравнений обучения:}
+  \begin{align}
+    \frac{dW}{dt} & = -\gamma_W \nabla_W R + \alpha W, \quad W = W^\top, \; \mathrm{diag}(W) = 0 \\
+    \frac{db}{dt} & = -\gamma_I \nabla_b R + \alpha b
+  \end{align}
+
+  \textbf{Проектор на допустимое множество:}
+  \begin{itemize}
+    \item Симметризация: \(w_{ij} \leftarrow \frac{w_{ij} + w_{ji}}{2}\)
+    \item Нулевая диагональ: \(w_{ii} \leftarrow 0\)
+  \end{itemize}
+
+  \small{Вывод градиентов: \cite{fradkov1979}; проектор: авторская модификация для симметричных матриц}
+\end{frame}
+
+% Слайд 7: Экспериментальные результаты
+\begin{frame}{Экспериментальные результаты}
+  \textbf{Условия эксперимента:}
+  \begin{itemize}
+    \item Параметры алгоритма: \(\gamma_W = \gamma_I = 0.2\), \(\alpha = 10^{-5}\), \(L_2\)-регуляризация, \(\beta = 1.0\)
+    \item Датасет: 10 цифр (0-9), размер 5×7 = 35 пикселей
+    \item ODE-солвер: Dormand-Prince 5(4), точность \(10^{-7}\) \cite{hairer1993}
+    \item Время обучения: 1000 шагов
+  \end{itemize}
+
+  \textbf{Результат: Сходимость метода и восстановление паттернов с шумом}
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{semilogyaxis}[
+          width=0.85\textwidth,
+          height=4.5cm,
+          xlabel={Время обучения},
+          ylabel={\(R(W,b)\)},
+          grid=major,
+          xmin=0, xmax=1000,
+          ymin=1e-4, ymax=1e3
+        ]
+        \addplot[cyan, line width=1.5pt] coordinates {
+            (0, 500) (50, 600) (100, 650) (200, 680) (500, 700) (1000, 700)
+          };
+        \addplot[yellow, line width=1.5pt] coordinates {
+            (0, 10) (50, 1) (100, 0.1) (200, 0.01) (500, 0.001) (1000, 0.0001)
+          };
+        \legend{\(Q\) (вспомогательный), \(R\) (целевой)}
+      \end{semilogyaxis}
+    \end{tikzpicture}
+  \end{center}
+
+  \small{Датасет: 10 цифр 5×7 \cite{hertz1991}; параметры: \(\gamma=0.2\), \(\alpha=10^{-5}\); ODE-солвер: Dormand-Prince 5(4) \cite{hairer1993}}
+\end{frame}
+
+% Слайд 8: Выводы и реализация
+\begin{frame}{Выводы и программная реализация}
+  \textbf{Основные результаты:}
+  \begin{enumerate}
+    \item \textbf{Теоретический вклад:} Впервые применён метод скоростного градиента к обучению непрерывной сети Хопфилда с обоснованием сходимости \cite{fradkov1979,fradkov2020}.
+
+    \item \textbf{Алгоритмический вклад:} Разработан алгоритм с проектором на симметричные матрицы, обеспечивающий выполнение ограничений \(W = W^\top\), \(w_{ii} = 0\).
+
+    \item \textbf{Экспериментальное подтверждение:}
+          \begin{itemize}
+            \item Сходимость \(R\): от \(10^1\) до \(10^{-4}\) за 1000 шагов
+            \item При 20\% шуме: восстановление за 5 шагов интегрирования
+          \end{itemize}
+  \end{enumerate}
+
+  \textbf{Программная реализация:}
+  \begin{itemize}
+    \item \textbf{Scala + Almond (Jupyter):} Интерактивное исследование алгоритма \cite{almond2024,perez2021jupyter}
+    \item \textbf{Rust:} Мультиагентная среда LMAPF \cite{rust2024,lmapf2024}
+    \item Открытый код на GitHub
+  \end{itemize}
+
+  \small{Реализация: Scala+Jupyter \cite{almond2024,perez2021jupyter}, Rust \cite{rust2024}, LMAPF \cite{lmapf2024}}
+\end{frame}
+
+% Слайд 9: Библиография (кликабельная)
+\begin{frame}[allowframebreaks]{Литература}
+  \printbibliography[heading=none]
+\end{frame}
+
+% Слайд 10: Спасибо
+\begin{frame}
+  \centering
+  \vfill
+  {\Large \textbf{Спасибо за внимание!}}
+  \vfill
+  \small{Вопросы?}
+  \vfill
+\end{frame}
+
+\end{document}

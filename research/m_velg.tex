@@ -34,17 +34,19 @@
 \]
 
 \[
-  r^\mu(t)=-x_{*}^\mu+W(t)y^\mu(t)+b(t)
+  r^\mu(t)=-x_{*}^\mu+W(t)y_{*}^\mu(t)+b(t)
 \]
 
 \[
   x_{*_{i}}^\mu = atanh{((1-\epsilon)\xi_{i}^\mu)}
 \]
 
+где \( \xi_{i}^\mu \) - целевые паттерны для обучения.
+
 Тогда
 
 \[
-  \frac{dW}{dt}= -\gamma_{W}\P_{S}(\nabla_{S}{R(\tilde{y},W,b,t)}),
+  \frac{dW}{dt}= -\gamma_{W}\P_{S}(\nabla_{W}{R(\tilde{y},W,b,t)}),
   \quad W(0)\in S
 \]
 

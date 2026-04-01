@@ -6,21 +6,24 @@
 
 mnist_test.csv
 mnist_train.csv
-research/review.tex
-research/title.tex
-research/*.pdf
-research/*.out
-research/*.log
-research/*.fls
-research/*.blg
-research/*.bcf*
-research/*.bbl*
-research/*.fdb*
-research/*.aux
-research/*.run*
-research/*.toc*
-research/*.rtx*
-research/*.synctex*
+*/review.tex
+*/title.tex
+*/intro.tex
+*/*.pdf
+*/*.out
+*/*.log
+*/*.fls
+*/*.blg
+*/*.bcf*
+*/*.bbl*
+*/*.fdb*
+*/*.aux
+*/*.run*
+*/*.toc*
+*/*.rtx*
+*/*.synctex*
+*/*.nav
+*/*.snm
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
